@@ -2,5 +2,6 @@
 from transformers import ViTForImageClassification
 
 def create_model():
-    model = ViTForImageClassification.from_pretrained("google/vit-base-patch16-224-in21k")
+    model = ViTForImageClassification.from_pretrained("google/vit-base-patch16-224")
+    # model = ViTForImageClassification.from_pretrained("google/vit-base-patch16-224-in21k")
     return model
