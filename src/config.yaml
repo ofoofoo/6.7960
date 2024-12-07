@@ -30,4 +30,4 @@ lr_scheduler:
 logging:
   wandb:
     project: "deep_learning"
-    enabled: false
+    enabled: true

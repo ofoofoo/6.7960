@@ -86,7 +86,7 @@ def train(cfg: DictConfig) -> None:
         )
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = create_model().to(device)
+    model = create_model(num_encoder_layers_frozen=12).to(device)
     processor = ViTImageProcessor.from_pretrained("google/vit-base-patch16-224",)
     print(model)
 
@@ -112,7 +112,7 @@ def train(cfg: DictConfig) -> None:
                                 T_max=cfg.training.epochs)
 
     total_data = 0
-
+    early_stopper = EarlyStopping(cfg.training.patience)
     for epoch in range(cfg.training.epochs):
         train_loss, train_total = train_epoch(model, train_loader, optimizer, device, processor)
         val_accuracy, val_loss = validate(model, val_loader, device, processor)
@@ -128,12 +128,10 @@ def train(cfg: DictConfig) -> None:
 
         scheduler.step()
         
-        early_stopper = EarlyStopping(cfg.training.patience)
-        if early_stopper is not None:
-            early_stopper(val_loss)
-            if early_stopper.stop:
-                print("=============Early stopping============")
-                break
+        early_stopper(val_loss)
+        if early_stopper.stop:
+            print("=============Early stopping============")
+            break
 
     if cfg.logging.wandb.enabled:
         wandb.finish()
