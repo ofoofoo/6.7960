@@ -1,7 +1,9 @@
 import torch
-from torch.utils.data import DataLoader, Dataset, Subset
+from torch.utils.data import DataLoader, Dataset, Subset, WeightedRandomSampler
 from torchvision import datasets, transforms
 from datasets import load_dataset
+from collections import Counter
+from tqdm import tqdm
 
 from PIL import Image
 
@@ -47,27 +49,7 @@ def create_dummy_dataloader(batch_size=64, num_workers=4, pin_memory=True):
                         num_workers=num_workers, pin_memory=pin_memory)
     return loader, loader
 
-def create_dataloader(dataset="Food101", data_dir = "data", batch_size=64, val_batch_size=512, pin_memory=True):
-
-    # normalize = transforms.Normalize(mean=image_mean, std=image_std)
-    # _train_transforms = transforms.Compose(
-    #     [
-    #         transforms.RandomResizedCrop(size),
-    #         transforms.RandomHorizontalFlip(),
-    #         transforms.ToTensor(),
-    #         transforms.normalize,
-    #     ]
-    # )
-
-    # _val_transforms = Compose(
-    #     [
-    #         transforms.Resize(size),
-    #         transforms.CenterCrop(size),
-    #         transforms.ToTensor(),
-    #         transforms.normalize,
-    #     ]
-    # )
-
+def create_dataloader(dataset="Food101", data_dir = "data", batch_size=64, val_batch_size=512, pin_memory=True, bad_class_ids = None, bad_class_proportion = 0.8):
     if dataset == "Food101": # FOOD101 HAS NO VALIDATION SET, WE NEED TO SPLIT MANUALLY
         train_dataset = datasets.Food101(
             root=data_dir, 
@@ -88,12 +70,6 @@ def create_dataloader(dataset="Food101", data_dir = "data", batch_size=64, val_b
             download=True
         )
 
-        # val_dataset = datasets.Flowers102(
-        #     root=data_dir,
-        #     split='val',
-        #     download=True
-        # )
-
         test_dataset = datasets.Flowers102(
         root=data_dir, 
         split='test',
@@ -113,14 +89,27 @@ def create_dataloader(dataset="Food101", data_dir = "data", batch_size=64, val_b
         download=True
         )
     
-    subset_size = int(len(train_dataset) * 1)  # subset the train set
+    subset_size = int(len(train_dataset) * 0.5)  # subset the train set
     indices = np.random.choice(len(train_dataset), subset_size, replace=False)  # randomly select points
     train_dataset = Subset(train_dataset, indices)
 
-    subset_size = int(len(test_dataset) * 1)  # subset the test set
+    subset_size = int(len(test_dataset) * 0.5)  # subset the test set
     indices = np.random.choice(len(test_dataset), subset_size, replace=False)  # randomly select points
     test_dataset = Subset(test_dataset, indices)
 
+    if bad_class_ids == None:
+        train_sampler = None
+    else:
+        num_classes = int(dataset[-3:])
+        bad_weight = bad_class_proportion / len(bad_class_ids)
+        good_weight = (1 - bad_class_proportion) / (num_classes - len(bad_class_ids))
+        labels = torch.tensor(train_dataset.dataset._labels)[train_dataset.indices]
+        bad_class_ids_tensor = torch.tensor(bad_class_ids)
+        mask = torch.isin(labels, bad_class_ids_tensor)
+        weights = torch.where(mask, torch.tensor(bad_weight), torch.tensor(good_weight))
+        #weights = torch.tensor([bad_weight if label in bad_class_ids else good_weight for image, label in tqdm(train_dataset)])
+        num_samples = int((len(bad_class_ids) / num_classes) * len(train_dataset) / bad_class_proportion)
+        train_sampler = WeightedRandomSampler(weights=weights, num_samples=num_samples, replacement=True)
 
     def collate_fn(batch):
         images = [item[0] for item in batch]
@@ -128,10 +117,10 @@ def create_dataloader(dataset="Food101", data_dir = "data", batch_size=64, val_b
         return images, torch.tensor(labels) # keep images raw, convert labels to tensor
     
     train_loader = DataLoader(train_dataset, 
-                              batch_size=batch_size, 
-                              shuffle=True, 
+                              batch_size=batch_size,
                               pin_memory=pin_memory,
-                              collate_fn=collate_fn)
+                              collate_fn=collate_fn,
+                              sampler=train_sampler)
 
     test_loader = DataLoader(test_dataset, 
                              batch_size=val_batch_size, 
