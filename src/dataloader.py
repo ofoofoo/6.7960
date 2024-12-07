@@ -4,6 +4,7 @@ from torchvision import datasets, transforms
 from datasets import load_dataset
 from collections import Counter
 from tqdm import tqdm
+import hydra
 
 from PIL import Image
 
@@ -49,7 +50,7 @@ def create_dummy_dataloader(batch_size=64, num_workers=4, pin_memory=True):
                         num_workers=num_workers, pin_memory=pin_memory)
     return loader, loader
 
-def create_dataloader(dataset="Food101", data_dir = "data", batch_size=64, val_batch_size=512, pin_memory=True, bad_class_ids = None, bad_class_proportion = 0.8):
+def create_dataloader(dataset="Food101", data_dir = "data", batch_size=64, val_batch_size=512, pin_memory=True, bad_class_ids = None, bad_class_proportion = 0.8, subset_weight=0.5):
     if dataset == "Food101": # FOOD101 HAS NO VALIDATION SET, WE NEED TO SPLIT MANUALLY
         train_dataset = datasets.Food101(
             root=data_dir, 
@@ -89,11 +90,11 @@ def create_dataloader(dataset="Food101", data_dir = "data", batch_size=64, val_b
         download=True
         )
     
-    subset_size = int(len(train_dataset) * 0.5)  # subset the train set
+    subset_size = int(len(train_dataset) * subset_weight)  # subset the train set
     indices = np.random.choice(len(train_dataset), subset_size, replace=False)  # randomly select points
     train_dataset = Subset(train_dataset, indices)
 
-    subset_size = int(len(test_dataset) * 0.5)  # subset the test set
+    subset_size = int(len(test_dataset) * subset_weight)  # subset the test set
     indices = np.random.choice(len(test_dataset), subset_size, replace=False)  # randomly select points
     test_dataset = Subset(test_dataset, indices)
 

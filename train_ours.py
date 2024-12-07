@@ -108,8 +108,8 @@ def train(cfg: DictConfig) -> None:
             config=OmegaConf.to_container(cfg, resolve=True)
         )
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-    model = create_model(num_encoder_layers_frozen=0).to(device)
+    num_classes = int(cfg.dataset.name[-3:])
+    model = create_model(num_encoder_layers_frozen=cfg.training.num_layers_frozen, num_classes=num_classes).to(device)
     processor = ViTImageProcessor.from_pretrained("google/vit-base-patch16-224",)
     print(model)
 
@@ -124,7 +124,8 @@ def train(cfg: DictConfig) -> None:
         data_dir=cfg.dataset.path, 
         batch_size=cfg.dataset.batch_size,
         val_batch_size=cfg.dataset.val_batch_size,
-        pin_memory=True
+        pin_memory=True,
+        subset_weight=cfg.dataset.subset_weight
     )
     optimizer = torch.optim.Adam(model.parameters(), 
                                  lr=cfg.training.learning_rate,
@@ -164,8 +165,8 @@ def train(cfg: DictConfig) -> None:
             print("=============Early stopping============")
             break
         # IF IT IS TIME TO DO THE MIXTURE TRAINING, THEN ONLY CHANGE THE DATALOADER:    
-        if epoch % cfg.training.num_epochs_mix == 0:
-            _, bad_class_ids = torch.topk(class_accuracies, 10)
+        if (epoch > 5) and (epoch % cfg.training.num_epochs_mix == 0):
+            _, bad_class_ids = torch.topk(class_accuracies, cfg.training.num_bad_classes)
             print(bad_class_ids.shape)
             train_loader, _ = create_dataloader(dataset=cfg.dataset.name,
                                                 data_dir=cfg.dataset.path, 
