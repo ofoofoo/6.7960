@@ -53,7 +53,7 @@ def validate(model, val_loader, device, processor):
 
 # implement early stopping class
 class EarlyStopping:
-    def __init__(self, patience=10, min_delta=0.0):
+    def __init__(self, patience=5, min_delta=0.0):
         self.patience = patience
         self.min_delta = min_delta
         self.best_value = None
@@ -128,6 +128,7 @@ def train(cfg: DictConfig) -> None:
 
         scheduler.step()
         
+        early_stopper = EarlyStopping(cfg.training.patience)
         if early_stopper is not None:
             early_stopper(val_loss)
             if early_stopper.stop:

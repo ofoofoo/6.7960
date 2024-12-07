@@ -110,7 +110,7 @@ def create_dataloader(dataset="Food101", data_dir = "data", batch_size=64, val_b
         indices = np.random.choice(len(val_dataset), subset_size, replace=False)  # randomly select points
         val_dataset = Subset(val_dataset, indices)
 
-        val_loader = DataLoader(val_dataset, 
+        test_loader = DataLoader(val_dataset, 
                               batch_size=val_batch_size, 
                               shuffle=True, 
                               pin_memory=pin_memory,
@@ -133,6 +133,7 @@ def create_dataloader(dataset="Food101", data_dir = "data", batch_size=64, val_b
                              pin_memory=pin_memory,
                              collate_fn=collate_fn)
     
+
     return train_loader, test_loader
 
 
