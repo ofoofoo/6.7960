@@ -7,6 +7,8 @@ from PIL import Image
 
 import numpy as np
 
+np.random.seed(42)
+
 #  HF datasets --> PyTorch datasets
 class HFDataset(torch.utils.data.Dataset):
     def __init__(self, hf_dataset, transform=None):
@@ -97,16 +99,16 @@ def create_dataloader(dataset="Food101", data_dir = "data", batch_size=64, val_b
         download=True
         )
     
-    subset_size = int(len(train_dataset) * 0.01)  # subset the train set
+    subset_size = int(len(train_dataset) * 0.5)  # subset the train set
     indices = np.random.choice(len(train_dataset), subset_size, replace=False)  # randomly select points
     train_dataset = Subset(train_dataset, indices)
 
-    subset_size = int(len(test_dataset) * 0.01)  # subset the test set
+    subset_size = int(len(test_dataset) * 0.5)  # subset the test set
     indices = np.random.choice(len(test_dataset), subset_size, replace=False)  # randomly select points
     test_dataset = Subset(test_dataset, indices)
 
     if dataset == "Flowers102":
-        subset_size = int(len(val_dataset) * 0.01)  # subset the val set
+        subset_size = int(len(val_dataset) * 0.5)  # subset the val set
         indices = np.random.choice(len(val_dataset), subset_size, replace=False)  # randomly select points
         val_dataset = Subset(val_dataset, indices)
 
