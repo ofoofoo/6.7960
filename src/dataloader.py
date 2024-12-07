@@ -1,5 +1,5 @@
 import torch
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, Dataset, Subset
 from torchvision import datasets, transforms
 from datasets import load_dataset
 
@@ -43,55 +43,96 @@ def create_dummy_dataloader(batch_size=64, num_workers=4, pin_memory=True):
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=True,
                         num_workers=num_workers, pin_memory=pin_memory)
     return loader, loader
-import torch
-from torch.utils.data import DataLoader
-from torchvision import transforms
-from datasets import load_dataset
 
-def create_dataloader(data_dir, batch_size=64, pin_memory=True):
-    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                     std=[0.229, 0.224, 0.225])
+def create_dataloader(dataset="Food101", data_dir = "data", batch_size=64, val_batch_size=512, pin_memory=True):
 
-    train_transform = transforms.Compose([
-        transforms.RandomResizedCrop(224),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        normalize,
-    ])
+    # normalize = transforms.Normalize(mean=image_mean, std=image_std)
+    # _train_transforms = transforms.Compose(
+    #     [
+    #         transforms.RandomResizedCrop(size),
+    #         transforms.RandomHorizontalFlip(),
+    #         transforms.ToTensor(),
+    #         transforms.normalize,
+    #     ]
+    # )
 
-    val_transform = transforms.Compose([
-        transforms.Resize(256),
-        transforms.CenterCrop(224),
-        transforms.ToTensor(),
-        normalize,
-    ])
+    # _val_transforms = Compose(
+    #     [
+    #         transforms.Resize(size),
+    #         transforms.CenterCrop(size),
+    #         transforms.ToTensor(),
+    #         transforms.normalize,
+    #     ]
+    # )
 
-    train_dataset = load_dataset("GATE-engine/mini_imagenet", split='train')
-    val_dataset = load_dataset("GATE-engine/mini_imagenet", split='validation')
-    test_dataset = load_dataset("GATE-engine/mini_imagenet", split='test')
-    print("Hi HF to Pytorch takes a long time")
-    train_dataset = HFDataset(train_dataset, transform=train_transform)
-    val_dataset = HFDataset(val_dataset, transform=val_transform)
-    test_dataset = HFDataset(test_dataset, transform=val_transform)
+    if dataset == "Food101": # FOOD101 HAS NO VALIDATION SET, WE NEED TO SPLIT MANUALLY
+        train_dataset = datasets.Food101(
+            root=data_dir, 
+            split='train',
+            download=True
+        )
 
-    train_loader = DataLoader(
-        train_dataset, 
-        batch_size=batch_size, 
-        shuffle=True, 
-        pin_memory=pin_memory
-    )
+        test_dataset = datasets.Food101(
+        root=data_dir, 
+        split='test',
+        download=True
+        )
     
-    val_loader = DataLoader(
-        val_dataset, 
-        batch_size=batch_size, 
-        shuffle=False, 
-        pin_memory=pin_memory
-    )
+    elif dataset == "Flowers102": # FLOWERS102 DOES HAVE A VALIDATION SET
+        train_dataset = datasets.Flowers102(
+            root=data_dir, 
+            split='train',
+            download=True
+        )
+
+        val_dataset = datasets.Flowers102(
+            root=data_dir,
+            split='val',
+            download=True
+        )
+
+        test_dataset = datasets.Flowers102(
+        root=data_dir, 
+        split='test',
+        download=True
+        )
     
-    test_loader = DataLoader(
-        test_dataset, 
-        batch_size=batch_size, 
-        shuffle=False, 
-        pin_memory=pin_memory
-    )
-    return train_loader, val_loader, test_loader
+    subset_size = int(len(train_dataset) * 0.01)  # subset the train set
+    indices = np.random.choice(len(train_dataset), subset_size, replace=False)  # randomly select points
+    train_dataset = Subset(train_dataset, indices)
+
+    subset_size = int(len(test_dataset) * 0.01)  # subset the test set
+    indices = np.random.choice(len(test_dataset), subset_size, replace=False)  # randomly select points
+    test_dataset = Subset(test_dataset, indices)
+
+    if dataset == "Flowers102":
+        subset_size = int(len(val_dataset) * 0.01)  # subset the val set
+        indices = np.random.choice(len(val_dataset), subset_size, replace=False)  # randomly select points
+        val_dataset = Subset(val_dataset, indices)
+
+        val_loader = DataLoader(val_dataset, 
+                              batch_size=val_batch_size, 
+                              shuffle=True, 
+                              pin_memory=pin_memory,
+                              collate_fn=collate_fn)
+
+    def collate_fn(batch):
+        images = [item[0] for item in batch]
+        labels = [item[1] for item in batch] 
+        return images, torch.tensor(labels) # keep images raw, convert labels to tensor
+    
+    train_loader = DataLoader(train_dataset, 
+                              batch_size=batch_size, 
+                              shuffle=True, 
+                              pin_memory=pin_memory,
+                              collate_fn=collate_fn)
+
+    test_loader = DataLoader(test_dataset, 
+                             batch_size=val_batch_size, 
+                             shuffle=True, 
+                             pin_memory=pin_memory,
+                             collate_fn=collate_fn)
+    
+    return train_loader, test_loader
+
+
