@@ -113,6 +113,14 @@ def train(cfg: DictConfig) -> None:
 
     total_data = 0
     early_stopper = EarlyStopping(cfg.training.patience)
+
+    val_accuracy, val_loss = validate(model, val_loader, device, processor) # track metrics before first train epoch
+    if cfg.logging.wandb.enabled:
+        wandb.log({
+            "val_loss": val_loss,
+            "val_accuracy": val_accuracy
+        })
+
     for epoch in range(cfg.training.epochs):
         train_loss, train_total = train_epoch(model, train_loader, optimizer, device, processor)
         val_accuracy, val_loss = validate(model, val_loader, device, processor)
