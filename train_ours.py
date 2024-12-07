@@ -165,7 +165,7 @@ def train(cfg: DictConfig) -> None:
             print("=============Early stopping============")
             break
         # IF IT IS TIME TO DO THE MIXTURE TRAINING, THEN ONLY CHANGE THE DATALOADER:    
-        if (epoch > 5) and (epoch % cfg.training.num_epochs_mix == 0):
+        if (epoch > cfg.training.num_epochs_before_mix) and (epoch % cfg.training.num_epochs_mix == 0):
             _, bad_class_ids = torch.topk(class_accuracies, cfg.training.num_bad_classes)
             print(bad_class_ids.shape)
             train_loader, _ = create_dataloader(dataset=cfg.dataset.name,

@@ -21,6 +21,7 @@ training:
   num_epochs_mix: 5
   num_layers_frozen: 12
   num_bad_classes: 10
+  num_epochs_before_mix: 5
 
 logging:
   wandb:
