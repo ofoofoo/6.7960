@@ -19,9 +19,8 @@ training:
   patience: 5
   early_stopping: true
   num_epochs_mix: 1
-  num_layers_frozen: 12
-  num_bad_classes: 10
-  num_epochs_before_mix: 5
+  num_layers_frozen: 0
+  num_bad_classes: 25
 
 logging:
   wandb:
