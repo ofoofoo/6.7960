@@ -7,7 +7,7 @@ model:
   # add as needed
 
 dataset:
-  name: "Flowers102" # either Food101 or Flowers102
+  name: "Food101" # either Food101 or Flowers102
   path: "ob"
   batch_size: 128
   val_batch_size: 512
@@ -16,9 +16,9 @@ dataset:
 training:
   epochs: 80
   learning_rate: 1e-4
-  patience: 3
+  patience: 5
   early_stopping: true
-  num_epochs_mix: 5
+  num_epochs_mix: 1
   num_layers_frozen: 12
   num_bad_classes: 10
   num_epochs_before_mix: 5
@@ -26,7 +26,7 @@ training:
 logging:
   wandb:
     project: "deep_learning"
-    enabled: false
+    enabled: true
 
 optimizer:
   type: "Adam"
