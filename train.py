@@ -86,7 +86,7 @@ def train(cfg: DictConfig) -> None:
         )
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = create_model(num_encoder_layers_frozen=12).to(device)
+    model = create_model(num_encoder_layers_frozen=0).to(device)
     processor = ViTImageProcessor.from_pretrained("google/vit-base-patch16-224",)
     print(model)
 
