@@ -7,8 +7,8 @@ from PIL import Image
 
 import numpy as np
 
-np.random.seed(cfg.experiment.seed)
-torch.manual_seed(cfg.experiment.seed)
+np.random.seed(42)
+torch.manual_seed(42)
 
 #  HF datasets --> PyTorch datasets
 class HFDataset(torch.utils.data.Dataset):

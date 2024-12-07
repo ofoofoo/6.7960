@@ -13,8 +13,8 @@ from src.dataloader import *
 import torch
 import torch.nn.functional as F
 
-np.random.seed(cfg.experiment.seed)
-torch.manual_seed(cfg.experiment.seed)
+np.random.seed(42)
+torch.manual_seed(42)
 
 def train_epoch(model, train_loader, optimizer, device, processor):
     model.train()
@@ -88,7 +88,7 @@ def train(cfg: DictConfig) -> None:
         )
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    model = create_model(num_encoder_layers_frozen=0).to(device)
+    model = create_model(num_encoder_layers_frozen=12).to(device)
     processor = ViTImageProcessor.from_pretrained("google/vit-base-patch16-224",)
     print(model)
 
