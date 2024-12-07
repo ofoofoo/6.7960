@@ -7,7 +7,8 @@ from PIL import Image
 
 import numpy as np
 
-np.random.seed(42)
+np.random.seed(cfg.experiment.seed)
+torch.manual_seed(cfg.experiment.seed)
 
 #  HF datasets --> PyTorch datasets
 class HFDataset(torch.utils.data.Dataset):
@@ -87,11 +88,11 @@ def create_dataloader(dataset="Food101", data_dir = "data", batch_size=64, val_b
             download=True
         )
 
-        val_dataset = datasets.Flowers102(
-            root=data_dir,
-            split='val',
-            download=True
-        )
+        # val_dataset = datasets.Flowers102(
+        #     root=data_dir,
+        #     split='val',
+        #     download=True
+        # )
 
         test_dataset = datasets.Flowers102(
         root=data_dir, 
@@ -99,24 +100,27 @@ def create_dataloader(dataset="Food101", data_dir = "data", batch_size=64, val_b
         download=True
         )
     
-    subset_size = int(len(train_dataset) * 0.5)  # subset the train set
+    elif dataset == "Stanford196": 
+        train_dataset = datasets.StanfordCars(
+            root=data_dir, 
+            split='train',
+            download=True
+        )
+
+        test_dataset = datasets.StanfordCars(
+        root=data_dir, 
+        split='test',
+        download=True
+        )
+    
+    subset_size = int(len(train_dataset) * 1)  # subset the train set
     indices = np.random.choice(len(train_dataset), subset_size, replace=False)  # randomly select points
     train_dataset = Subset(train_dataset, indices)
 
-    subset_size = int(len(test_dataset) * 0.5)  # subset the test set
+    subset_size = int(len(test_dataset) * 1)  # subset the test set
     indices = np.random.choice(len(test_dataset), subset_size, replace=False)  # randomly select points
     test_dataset = Subset(test_dataset, indices)
 
-    if dataset == "Flowers102":
-        subset_size = int(len(val_dataset) * 0.5)  # subset the val set
-        indices = np.random.choice(len(val_dataset), subset_size, replace=False)  # randomly select points
-        val_dataset = Subset(val_dataset, indices)
-
-        test_loader = DataLoader(val_dataset, 
-                              batch_size=val_batch_size, 
-                              shuffle=True, 
-                              pin_memory=pin_memory,
-                              collate_fn=collate_fn)
 
     def collate_fn(batch):
         images = [item[0] for item in batch]

@@ -13,6 +13,8 @@ from src.dataloader import *
 import torch
 import torch.nn.functional as F
 
+np.random.seed(cfg.experiment.seed)
+torch.manual_seed(cfg.experiment.seed)
 
 def train_epoch(model, train_loader, optimizer, device, processor):
     model.train()
