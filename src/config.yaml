@@ -7,7 +7,7 @@ model:
   # add as needed
 
 dataset:
-  name: "DTD196" # either Food101 or Flowers102 or DTD196
+  name: "DTD047" # either Food101 or Flowers102 or DTD047
   path: "ob"
   batch_size: 128
   val_batch_size: 512
