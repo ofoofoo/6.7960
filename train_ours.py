@@ -25,7 +25,7 @@ def train_epoch(model, train_loader, optimizer, device, processor):
         labels = labels.to(device)
         optimizer.zero_grad()
         outputs = model(**images)
-        print(outputs.logits.shape)
+        # print(outputs.logits.shape)
         loss = F.cross_entropy(outputs.logits, labels) # classificaiton loss?
         loss.backward()
         optimizer.step()
@@ -146,7 +146,9 @@ def train(cfg: DictConfig) -> None:
         })
 
     for epoch in range(cfg.training.epochs):
+        print(f"train epoch {epoch}")
         train_loss, train_total = train_epoch(model, train_loader, optimizer, device, processor)
+        print(f"val epoch {epoch}")
         val_accuracy, val_loss, class_accuracies = validate(model, val_loader, device, processor, cfg.dataset.name)
         total_data += train_total
         if cfg.logging.wandb.enabled:
@@ -173,7 +175,16 @@ def train(cfg: DictConfig) -> None:
                                                 batch_size=cfg.dataset.batch_size,
                                                 val_batch_size=cfg.dataset.val_batch_size,
                                                 pin_memory=True,
-                                                bad_class_ids=bad_class_ids)
+                                                bad_class_ids=bad_class_ids,
+                                                subset_weight=cfg.dataset.subset_weight)
+        elif cfg.training.mix_for_only_one and epoch > 0 and epoch % cfg.training.num_epochs_mix == 0:
+            # reset train loader to original train loader if we only want to mix for one epoch each time
+            train_loader, _ = create_dataloader(dataset=cfg.dataset.name,
+                                                data_dir=cfg.dataset.path, 
+                                                batch_size=cfg.dataset.batch_size,
+                                                val_batch_size=cfg.dataset.val_batch_size,
+                                                pin_memory=True,
+                                                subset_weight=cfg.dataset.subset_weight)
 
     if cfg.logging.wandb.enabled:
         wandb.finish()

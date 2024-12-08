@@ -7,18 +7,19 @@ model:
   # add as needed
 
 dataset:
-  name: "Food101" # either Food101 or Flowers102
+  name: "Flowers102" # either Food101 or Flowers102
   path: "ob"
   batch_size: 128
   val_batch_size: 512
-  subset_weight: 0.5
+  subset_weight: 1
 
 training:
   epochs: 80
   learning_rate: 1e-4
   patience: 5
   early_stopping: true
-  num_epochs_mix: 1
+  num_epochs_mix: 5
+  mix_for_only_one: true
   num_layers_frozen: 0
   num_bad_classes: 25
 
