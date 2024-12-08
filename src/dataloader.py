@@ -77,14 +77,14 @@ def create_dataloader(dataset="Food101", data_dir = "data", batch_size=64, val_b
         download=True
         )
     
-    elif dataset == "Stanford196": 
-        train_dataset = datasets.StanfordCars(
+    elif dataset == "DTD042": 
+        train_dataset = datasets.DTD(
             root=data_dir, 
             split='train',
             download=True
         )
 
-        test_dataset = datasets.StanfordCars(
+        test_dataset = datasets.DTD(
         root=data_dir, 
         split='test',
         download=True
