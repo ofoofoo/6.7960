@@ -77,7 +77,7 @@ def create_dataloader(dataset="Food101", data_dir = "data", batch_size=64, val_b
         download=True
         )
     
-    elif dataset == "DTD042": 
+    elif dataset == "DTD047": 
         train_dataset = datasets.DTD(
             root=data_dir, 
             split='train',
