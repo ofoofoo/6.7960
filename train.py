@@ -88,7 +88,9 @@ def train(cfg: DictConfig) -> None:
         )
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     num_classes = int(cfg.dataset.name[-3:])
-    model = create_model(num_encoder_layers_frozen=cfg.training.num_layers_frozen, num_classes=num_classes).to(device)
+    model = create_model(num_encoder_layers_frozen=cfg.training.num_layers_frozen, 
+                         num_classes=num_classes, 
+                         pretrained=cfg.training.from_pretrained).to(device)
     processor = ViTImageProcessor.from_pretrained("google/vit-base-patch16-224",)
     print(model)
 
@@ -115,7 +117,8 @@ def train(cfg: DictConfig) -> None:
                                 T_max=cfg.training.epochs)
 
     total_data = 0
-    early_stopper = EarlyStopping(cfg.training.patience)
+    if cfg.training.early_stopping:
+        early_stopper = EarlyStopping(cfg.training.patience)
 
     val_accuracy, val_loss = validate(model, val_loader, device, processor) # track metrics before first train epoch
     if cfg.logging.wandb.enabled:
@@ -139,10 +142,11 @@ def train(cfg: DictConfig) -> None:
 
         scheduler.step()
         
-        early_stopper(val_loss)
-        if early_stopper.stop:
-            print("=============Early stopping============")
-            break
+        if cfg.training.early_stopping:
+            early_stopper(val_loss)
+            if early_stopper.stop:
+                print("=============Early stopping============")
+                break
 
     if cfg.logging.wandb.enabled:
         wandb.finish()

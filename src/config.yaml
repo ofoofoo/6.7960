@@ -7,18 +7,19 @@ model:
   # add as needed
 
 dataset:
-  name: "DTD047" # either Food101 or Flowers102 or DTD047
+  name: "Food101" # either Food101 or Flowers102 or DTD047
   path: "ob"
   batch_size: 128
   val_batch_size: 512
-  subset_weight: 0.5
+  subset_weight: 0.25
 
 training:
-  epochs: 80
+  from_pretrained: False
+  epochs: 50
   learning_rate: 1e-4
   patience: 5
-  early_stopping: true
-  num_epochs_mix: 3
+  early_stopping: false
+  num_epochs_mix: 2
   mix_for_only_one: true
   num_layers_frozen: 0
   num_bad_classes: 25
