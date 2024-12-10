@@ -45,13 +45,15 @@ def plot_acc_vs_batches(acc_lists, num_batches_lists, labels, title, file_name, 
             markersize=4,
         )
         # Annotate the last point
+        xytext = (0, -12) if label == r"$p = 0.6$" else (0, 7)
         plt.annotate(
             f"{acc_list[-1]:.4f}",
             (num_batches_list[-1], acc_list[-1]),
             textcoords="offset points",
-            xytext=(-10, 10),
+            xytext=xytext,
             ha="center",
-            fontsize=8,
+            fontsize=12,
+            fontweight="bold",
             color=colors[i],
         )
 
@@ -70,7 +72,6 @@ def plot_acc_vs_batches(acc_lists, num_batches_lists, labels, title, file_name, 
     # Save the figure to the specified file
     plt.tight_layout()
     plt.savefig(f"figures/{file_name}", dpi=300, bbox_inches="tight")
-    plt.show()
 
 
 if __name__ == '__main__':
