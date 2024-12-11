@@ -1,6 +1,7 @@
 import wandb
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 api = wandb.Api()
 project_name = "deep_learning"
@@ -20,8 +21,7 @@ def find_convergence(acc_list, window_width=4):
     max_acc = np.max(convolve)
     return index, max_acc
 
-import matplotlib.pyplot as plt
-import seaborn as sns
+
 
 def plot_acc_vs_batches(acc_lists, num_batches_lists, labels, title, file_name, y_lims=None):
     sns.set_theme(style="whitegrid", context="talk")
