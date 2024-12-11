@@ -434,7 +434,7 @@
             Finally, we also explore training a ViT model from scratch. We compare using the ADS framework for training against vanilla training, hopefully seeing improvements in convergence rates due to the addition of targeted epochs. Due to compute and budget constraints this is only conducted on the Food101 dataset.<br><br>
 
 		    </div>
-		    <div class="margin-right-block" style="transform: translate(0%, -350%);">
+		    <div class="margin-right-block" style="transform: translate(0%, -250%);">
 				<b>Figure 2.</b> The ADS training scheme with alternating phases. Every \(n\) batches (shown with \(n=3\)), the training dataset is replaced by a reweighted dataset where the classes that the model achieves lowest accuracy on during validation are weighted higher than the classes that the model achieves higher accuracy on.
 		    </div>
 		</div>
@@ -608,7 +608,7 @@
 				<b>Figure 4.</b> Results of comparing the alternating phases scheme with the only targeted epochs scheme on Oxford Flowers. Note that alternating phases converges to a significantly higher validation accuracy.
 			</p>
 		
-			<p style="transform: translate(0%, 750%);">
+			<p style="transform: translate(0%, 700%);">
 				<b>Table 1.</b> Results of vanilla and ADS training with several hyperparameters on Oxford Flowers. All of our runs were run with alternating phases.
 
 				*the accuracy described here is the average accuracy over a sliding window of width 3.
