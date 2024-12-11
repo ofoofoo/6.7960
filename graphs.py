@@ -24,16 +24,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 def plot_acc_vs_batches(acc_lists, num_batches_lists, labels, title, file_name, y_lims=None):
-    # Set a more appealing style using seaborn
     sns.set_theme(style="whitegrid", context="talk")
 
-    # Create the figure
     plt.figure(figsize=(10, 6))
 
-    # Define a colormap for distinguishing lines
     colors = sns.color_palette("tab10", len(labels))
 
-    # Plot each accuracy vs. batches line
     for i, (acc_list, num_batches_list, label) in enumerate(zip(acc_lists, num_batches_lists, labels)):
         plt.plot(
             num_batches_list,
@@ -44,7 +40,6 @@ def plot_acc_vs_batches(acc_lists, num_batches_lists, labels, title, file_name, 
             marker="o",
             markersize=4,
         )
-        # Annotate the last point
         xytext = (0, -12) if label == r"$p = 0.6$" else (0, 7)
         plt.annotate(
             f"{acc_list[-1]:.4f}",
@@ -57,19 +52,15 @@ def plot_acc_vs_batches(acc_lists, num_batches_lists, labels, title, file_name, 
             color=colors[i],
         )
 
-    # Add title and labels
     plt.title(title, fontsize=16, fontweight="bold")
     plt.xlabel("Number of Batches", fontsize=14)
     plt.ylabel("Validation Accuracy", fontsize=14)
 
-    # Customize y-axis limits if provided
     if y_lims is not None:
         plt.ylim(y_lims[0], y_lims[1])
 
-    # Customize legend
     plt.legend(title="Models", fontsize=12, title_fontsize=14)
 
-    # Save the figure to the specified file
     plt.tight_layout()
     plt.savefig(f"figures/{file_name}", dpi=300, bbox_inches="tight")
 
