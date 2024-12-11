@@ -317,7 +317,7 @@
 
                     Additionally, there have also been many recent advancements in image classification with limited training examples. Feature disentanglement in the context of few-shot image classification focuses on isolating independent features, such as attributes and objects to generalize effectively to unseen combinations. For instance, a method proposed by Xu et al. decomposes input features into class-specific and intra-class variance components. The probabilistic modeling of intra-class variance allows the generation of augmented features that help improve classifier performance on few-shot tasks, especially in those conditions where data diversity is at a minimum <a href="#ref_8">[8]</a>. <br><br>
 
-                    Our new optimization technique, ADS, draws inspiration from CL, Adam, and few-shot learning techniques. However, whereas CL often preselects the order the model sees the training data, ADS dynamically selects the classes the model is performing the worst at during the training process and targets optimization toward those classes using the Adam optimizer. Notably, the iterative process of ADS differs from CL in the sense that it may be trained on the same data multiple times throughout the entire training process and is not necessarily presented in an “increasing order of difficulty”. 
+                    Our new optimization technique, ADS, draws inspiration from CL, Adam, and few-shot learning techniques. The iterative process of ADS differs from CL in the sense that it may be trained on the same data multiple times throughout the entire training process and is not necessarily presented in an “increasing order of difficulty”.  However, whereas CL preselects the order the model sees the training data, ADS dynamically selects the classes the model is performing the worst at during the training process and targets optimization toward those classes using the Adam optimizer.
 
 				  
 		    </div>
@@ -336,9 +336,9 @@
             For our baseline experiments, we ran the following two training frameworks:
             <ol>
                 <li><b>No-freeze Training:</b> The entire model, including the encoder and classifier head, was left unfrozen and was finetuned on the smaller datasets until convergence.</li>
-                <li><b>All-freeze Training:</b> All parts of the model had their weights frozen except for the classifier head, which was fine-tuned on the smaller datasets until convergence.</li>
+                <li><b>All-freeze Training:</b> All parts of the model had their weights frozen except for the classifier head and the embedding weights, which were fine-tuned on the smaller datasets until convergence.</li>
             </ol>
-            The motivation behind freezing and no freezing is that we hope to see that with less tunable parameters during finetuning, the model will be forced to learn “efficiently”, updating its weights in a more precise manner than if it had access to changing the weights of the entire model. This should theoretically lead to faster convergence in terms of total epochs and data points processed. <br><br>
+            The motivation behind freezing and no freezing is that we hope to see that with less tunable parameters during finetuning, the model will be forced to learn “efficiently”, updating its weights in a more precise manner than if it had access to changing the weights of the entire model. This should theoretically lead to faster convergence in terms of total data points processed. <br><br>
 
             <i>Dynamic Training:</i><br><br>
 			
@@ -418,36 +418,9 @@
                 </li>
                 <li>
                     <b>Distribution of Classes:</b> We adjusted the proportion of samples per class in the training dataset to over-represent these bad classes while maintaining a balanced representation of the remaining classes. 
-            This was explored with weights of [0.6, 0.8, 1], where 1 represents only mixing in the bad classes and 0 approaches vanilla training.
+            This was explored with weights of \(w = [0.6, 0.8, 1]\), where 1 represents only mixing in the bad classes and 0 approaches vanilla training. These weights refer to the proportion of samples in the epoch that are from the "bad classes". Meanwhile, the remaining classes are weighted so that they comprise \(p = 1-w\) proportion of the total samples in that epoch.
                 </li>
-                <ol type="a">
-                    <li>
-                        In particular, this weighting adheres to the following algorithm:
-                    </li>
-                    <u>Proportionality Formula:</u>
-    <p>
-        The adjusted proportion of samples for each class can be represented as:
-    </p>
-    <p>
-        \[
-        P(c_i) \propto w_i \cdot N(c_i)
-        \]
-    </p>
-    <p>where:</p>
-    <ul>
-        <li>
-            \( P(c_i) \) represents the adjusted probability of successfully sampling for class \( c_i \),
-        </li>
-        <li>
-            \( w_i \) is the weight applied to class \( c_i \), chosen from \([0.6, 0.8, 1]\),
-        </li>
-        <li>
-            \( N(c_i) \) is the original number of samples for class \( c_i \) in the dataset.
-        </li>
-    </ul>
-    <p>
-        The weights \( w_i \) were selected to over-represent the "bad" classes (\( w_i = 1 \) for maximum emphasis), while maintaining proportional representation for the remaining classes as \( w_i \) approaches 0.
-    </p>
+                   
                 </ol>
 
                 </li>
@@ -628,7 +601,7 @@
         </div>
         <div class="margin-right-block" style="transform: translate(0%, -100%);">
 			<p style="transform: translate(0%, -300%);">
-				<b>Figure 3.</b> Results of comparing freezing all transformer parameters with freezing no parameters for fine-tuning pretrained ImageNet ViT models on Oxford Flowers (top) and DTD (bottom).
+				<b>Figure 3.</b> Comparing parameter freezing with no parameter freezing for fine-tuning on Oxford Flowers (top) and DTD (bottom).
 			</p>
 
 			<p style="transform: translate(0%, 500%);">
@@ -664,7 +637,7 @@
         </div>
     <div class="main-content-block">
                 <h1>Conclusion</h1>
-                In this study, we investigated a new training paradigm for optimizing image classification models called Adaptive Data Selection (ADS). Whereas typical optimization methods involve running an optimizer on randomly selected or predetermined batches of training data (e.g. curriculum learning), ADS utilizes a dynamic training selection procedure that tailors training toward the model's specific weaknesses, focusing on underperforming regions of the training data distribution. Specifically, in a classification problem, our ADS framework evaluates the model's performance after some number of training epochs and identifies the top-k classes where the model is performing the worst in (in terms of classification accuracy). Then, some subsequent training epochs prioritize data from these worst performing classes, allowing the model to improve on its deficiencies. The rationale behind this is that, in order to speed up convergence with limited data, ADS can effectively concentrate its computational resources on resolving performance bottlenecks. This targeted process of identifying poor performing classes and training on them is repeated until convergence. The exact training scheme is detailed in the Methods and Experiments section above.<br><br>
+                In this study, we investigated a new training paradigm for optimizing image classification models called Adaptive Data Selection (ADS). Whereas typical optimization methods involve running an optimizer on randomly selected or predetermined batches of training data (e.g. curriculum learning), ADS utilizes a dynamic training selection procedure that tailors training toward the model's specific weaknesses, focusing on underperforming regions of the training data distribution. Specifically, in a classification problem, our ADS framework evaluates the model's performance after some number of training epochs and identifies the top-k classes where the model is performing the worst in (in terms of classification accuracy). Then, some subsequent training epochs prioritize data from these worst performing classes, allowing the model to improve on its deficiencies. The rationale behind this is that, in order to speed up convergence with limited data, ADS can effectively concentrate its computational resources on resolving performance bottlenecks. This targeted process of identifying poor performing classes and training on them is repeated until convergence.<br><br>
                 Our experiments explored the effectiveness of ADS in various scenarios, including transfer learning with pre-trained ViT models and training ViTs up from scratch. Our findings on the applicability of ADS to transfer learning include:
 
                 <ol>
@@ -682,7 +655,7 @@
 
                 We also trained models from scratch using ADS. In particular, we investigated the performance of ADS by training a classification model on the Food101 dataset. We trained two vision transformers of the same dimensions: one using the targeted ADS data selection method and one using stochastic data selection. We found that the ViT trained using ADS (validation accuracy 0.336) significantly outperforms the standard ViT (validation accuracy 0.163). It is worth noting that due to our limited model size, training capabilities, and computational resources, our models are not performing as well as state-of-the-art models. However, the relative performance between the two models under these constraints is clear. <br><br>
 
-                ADS represents a step toward efficient and adaptive methods of training in deep learning. In this regard, it is especially promising for applications where either the training data is severely imbalanced or the available computational power is limited. An extension to reinforcement learning would aim at prioritizing states and actions where policies are not performing well, thus leading to faster convergence in complex environments. In natural language processing, ADS may dynamically focus on ambiguous samples, which could enhance model performance for tasks such as sentiment analysis or machine translation. Future development of the ADS algorithm could focus on optimizing how many top-k classes to choose for training or by performing hyperparameter sweeps on the number of epochs per training section in our AP or TOTE training schemes. 
+                ADS represents a step toward efficient and adaptive methods of training in deep learning. In this regard, it is especially promising for applications where either the training data is severely imbalanced or the available computational power is limited. An extension to reinforcement learning would aim at prioritizing states and actions where policies are not performing well, thus leading to faster convergence in complex environments. In natural language processing, ADS may dynamically focus on ambiguous samples, which could enhance model performance for tasks such as sentiment analysis or machine translation. Future development of the ADS algorithm could focus on optimizing how many top-k classes to choose for training or by performing hyperparameter sweeps on the number of epochs per training section in our AP or TOTE training schemes. In our experiments, we were limited by our computing power and were unable to run extensive trials to exhaustively test our conclusions. Thus, to make the method more solid and proven, more trials would need to be conducted to ensure that the difference in performance is statistically significant. 
 
 
 
